@@ -7,51 +7,68 @@ export interface Database {
         Row: { id: number; name: string; slug: string; address: string | null; phone: string | null; timezone: string; academic_year: string | null; created_at: string; updated_at: string }
         Insert: { id?: number; name: string; slug: string; address?: string | null; phone?: string | null; timezone?: string; academic_year?: string | null; created_at?: string; updated_at?: string }
         Update: { id?: number; name?: string; slug?: string; address?: string | null; phone?: string | null; timezone?: string; academic_year?: string | null; created_at?: string; updated_at?: string }
+        Relationships: []
       }
       profiles: {
         Row: { id: number; user_id: string; school_id: number; role: string; full_name: string; email: string; phone: string | null; avatar_url: string | null; created_at: string; updated_at: string }
         Insert: { id?: number; user_id: string; school_id: number; role: string; full_name: string; email: string; phone?: string | null; avatar_url?: string | null; created_at?: string; updated_at?: string }
         Update: { id?: number; user_id?: string; school_id?: number; role?: string; full_name?: string; email?: string; phone?: string | null; avatar_url?: string | null; created_at?: string; updated_at?: string }
+        Relationships: []
       }
       classes: {
         Row: { id: number; school_id: number; name: string; grade: string | null; section: string | null; teacher_id: number | null; academic_year: string | null; created_at: string; updated_at: string }
         Insert: { id?: number; school_id: number; name: string; grade?: string | null; section?: string | null; teacher_id?: number | null; academic_year?: string | null; created_at?: string; updated_at?: string }
         Update: { id?: number; school_id?: number; name?: string; grade?: string | null; section?: string | null; teacher_id?: number | null; academic_year?: string | null; created_at?: string; updated_at?: string }
+        Relationships: []
       }
       enrollments: {
         Row: { id: number; class_id: number; student_id: number; parent_id: number | null; created_at: string }
         Insert: { id?: number; class_id: number; student_id: number; parent_id?: number | null; created_at?: string }
         Update: { id?: number; class_id?: number; student_id?: number; parent_id?: number | null; created_at?: string }
+        Relationships: []
       }
       attendance_records: {
         Row: { id: number; class_id: number; student_id: number; date: string; status: string; marked_by: number; notes: string | null; parent_notified: boolean; notified_at: string | null; created_at: string }
         Insert: { id?: number; class_id: number; student_id: number; date: string; status: string; marked_by: number; notes?: string | null; parent_notified?: boolean; notified_at?: string | null; created_at?: string }
         Update: { id?: number; class_id?: number; student_id?: number; date?: string; status?: string; marked_by?: number; notes?: string | null; parent_notified?: boolean; notified_at?: string | null; created_at?: string }
+        Relationships: []
       }
       conversations: {
         Row: { id: number; school_id: number; subject: string | null; created_at: string }
         Insert: { id?: number; school_id: number; subject?: string | null; created_at?: string }
         Update: { id?: number; school_id?: number; subject?: string | null; created_at?: string }
+        Relationships: []
       }
       conversation_participants: {
         Row: { id: number; conversation_id: number; profile_id: number; last_read_at: string | null; created_at: string }
         Insert: { id?: number; conversation_id: number; profile_id: number; last_read_at?: string | null; created_at?: string }
         Update: { id?: number; conversation_id?: number; profile_id?: number; last_read_at?: string | null; created_at?: string }
+        Relationships: []
       }
       messages: {
         Row: { id: number; conversation_id: number; sender_id: number; body: string; created_at: string }
         Insert: { id?: number; conversation_id: number; sender_id: number; body: string; created_at?: string }
         Update: { id?: number; conversation_id?: number; sender_id?: number; body?: string; created_at?: string }
+        Relationships: []
       }
       announcements: {
         Row: { id: number; school_id: number; author_id: number; title: string; body: string; priority: string; target_roles: string[]; created_at: string; updated_at: string }
         Insert: { id?: number; school_id: number; author_id: number; title: string; body: string; priority?: string; target_roles?: string[]; created_at?: string; updated_at?: string }
         Update: { id?: number; school_id?: number; author_id?: number; title?: string; body?: string; priority?: string; target_roles?: string[]; created_at?: string; updated_at?: string }
+        Relationships: [
+          {
+            foreignKeyName: "announcements_author_id_fkey",
+            columns: ["author_id"],
+            referencedRelation: "profiles",
+            referencedColumns: ["id"],
+          }
+        ]
       }
       attendance_alerts: {
         Row: { id: number; attendance_id: number; student_id: number; parent_id: number; sent_at: string; method: string; read_at: string | null }
         Insert: { id?: number; attendance_id: number; student_id: number; parent_id: number; sent_at?: string; method?: string; read_at?: string | null }
         Update: { id?: number; attendance_id?: number; student_id?: number; parent_id?: number; sent_at?: string; method?: string; read_at?: string | null }
+        Relationships: []
       }
     }
     Views: {}
