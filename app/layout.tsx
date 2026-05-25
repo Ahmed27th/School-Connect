@@ -5,12 +5,14 @@ import "./globals.css";
 const display = Plus_Jakarta_Sans({
   subsets: ['latin'],
   variable: '--font-display',
+  display: 'swap',
   weight: ['600', '700', '800'],
 })
 
 const body = DM_Sans({
   subsets: ['latin'],
   variable: '--font-body',
+  display: 'swap',
   weight: ['400', '500'],
 })
 

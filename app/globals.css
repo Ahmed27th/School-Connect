@@ -51,7 +51,6 @@
   --font-body: var(--font-body);
   --color-primary-hover: var(--primary-hover);
   --color-primary-light: var(--primary-light);
-  --color-accent: var(--accent);
   --color-accent-light: var(--accent-light);
   --color-surface: var(--surface);
   --color-surface-secondary: var(--surface-secondary);
@@ -152,6 +151,6 @@
     @apply bg-background text-foreground;
   }
   html {
-    @apply font-sans;
+    color-scheme: light dark;
   }
 }
