@@ -37,19 +37,52 @@ export interface Database {
         Row: { id: number; school_id: number; subject: string | null; created_at: string }
         Insert: { id?: number; school_id: number; subject?: string | null; created_at?: string }
         Update: { id?: number; school_id?: number; subject?: string | null; created_at?: string }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "conversations_school_id_fkey",
+            columns: ["school_id"],
+            referencedRelation: "schools",
+            referencedColumns: ["id"],
+          }
+        ]
       }
       conversation_participants: {
         Row: { id: number; conversation_id: number; profile_id: number; last_read_at: string | null; created_at: string }
         Insert: { id?: number; conversation_id: number; profile_id: number; last_read_at?: string | null; created_at?: string }
         Update: { id?: number; conversation_id?: number; profile_id?: number; last_read_at?: string | null; created_at?: string }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "conversation_participants_conversation_id_fkey",
+            columns: ["conversation_id"],
+            referencedRelation: "conversations",
+            referencedColumns: ["id"],
+          },
+          {
+            foreignKeyName: "conversation_participants_profile_id_fkey",
+            columns: ["profile_id"],
+            referencedRelation: "profiles",
+            referencedColumns: ["id"],
+          }
+        ]
       }
       messages: {
-        Row: { id: number; conversation_id: number; sender_id: number; body: string; created_at: string }
-        Insert: { id?: number; conversation_id: number; sender_id: number; body: string; created_at?: string }
-        Update: { id?: number; conversation_id?: number; sender_id?: number; body?: string; created_at?: string }
-        Relationships: []
+        Row: { id: number; conversation_id: number; sender_id: number; body: string; attachment_url: string | null; attachment_type: string | null; created_at: string }
+        Insert: { id?: number; conversation_id: number; sender_id: number; body: string; attachment_url?: string | null; attachment_type?: string | null; created_at?: string }
+        Update: { id?: number; conversation_id?: number; sender_id?: number; body?: string; attachment_url?: string | null; attachment_type?: string | null; created_at?: string }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey",
+            columns: ["conversation_id"],
+            referencedRelation: "conversations",
+            referencedColumns: ["id"],
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey",
+            columns: ["sender_id"],
+            referencedRelation: "profiles",
+            referencedColumns: ["id"],
+          }
+        ]
       }
       announcements: {
         Row: { id: number; school_id: number; author_id: number; title: string; body: string; priority: string; target_roles: string[]; created_at: string; updated_at: string }
@@ -70,6 +103,18 @@ export interface Database {
         Update: { id?: number; attendance_id?: number; student_id?: number; parent_id?: number; sent_at?: string; method?: string; read_at?: string | null }
         Relationships: []
       }
+      folders: {
+        Row: { id: number; school_id: number; class_id: number; name: string; created_by: number; created_at: string; updated_at: string }
+        Insert: { id?: number; school_id: number; class_id: number; name: string; created_by: number; created_at?: string; updated_at?: string }
+        Update: { id?: number; school_id?: number; class_id?: number; name?: string; created_by?: number; created_at?: string; updated_at?: string }
+        Relationships: []
+      }
+      resources: {
+        Row: { id: number; folder_id: number; name: string; storage_path: string; size_bytes: number; content_type: string; created_by: number; created_at: string; updated_at: string }
+        Insert: { id?: number; folder_id: number; name: string; storage_path: string; size_bytes: number; content_type: string; created_by: number; created_at?: string; updated_at?: string }
+        Update: { id?: number; folder_id?: number; name?: string; storage_path?: string; size_bytes?: number; content_type?: string; created_by?: number; created_at?: string; updated_at?: string }
+        Relationships: []
+      }
     }
     Views: {}
     Functions: {
@@ -77,6 +122,9 @@ export interface Database {
       get_profile_id: { Args: Record<string, never>; Returns: number }
       get_my_role: { Args: Record<string, never>; Returns: string }
       is_same_school: { Args: { target_profile_id: number }; Returns: boolean }
+      is_conversation_participant: { Args: { conv_id: number; prof_id: number }; Returns: boolean }
+      is_class_teacher_or_principal: { Args: { c_id: string }; Returns: boolean }
+      is_enrolled_in_class: { Args: { c_id: string }; Returns: boolean }
     }
     Enums: {}
     CompositeTypes: {}

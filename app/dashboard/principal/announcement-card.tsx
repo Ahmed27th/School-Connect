@@ -16,10 +16,12 @@ export function AnnouncementCard({
   announcement,
   onEdit,
   onDelete,
+  profile,
 }: {
   announcement: Announcement
   onEdit: () => void
   onDelete: (id: number) => void
+  profile?: { role: string }
 }) {
   const [expanded, setExpanded] = useState(false)
 
@@ -69,25 +71,27 @@ export function AnnouncementCard({
         </p>
       )}
 
-      <DashboardCardFooter>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon-sm" onClick={onEdit} aria-label="Edit announcement">
-            <Pencil className="size-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => {
-              if (window.confirm("Are you sure? This cannot be undone.")) {
-                onDelete(announcement.id)
-              }
-            }}
-            aria-label="Delete announcement"
-          >
-            <Trash2 className="size-4" />
-          </Button>
-        </div>
-      </DashboardCardFooter>
+      {profile?.role === "principal" && (
+        <DashboardCardFooter>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon-sm" onClick={onEdit} aria-label="Edit announcement">
+              <Pencil className="size-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => {
+                if (window.confirm("Are you sure? This cannot be undone.")) {
+                  onDelete(announcement.id)
+                }
+              }}
+              aria-label="Delete announcement"
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          </div>
+        </DashboardCardFooter>
+      )}
     </DashboardCard>
   )
 }

@@ -57,6 +57,44 @@ export default async function LoginPage({
             Sign In
           </button>
         </form>
+
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mt-8 pt-6 border-t border-border">
+            <p className="mb-4 text-xs font-medium uppercase tracking-wider text-on-surface-muted text-center">
+              Fast Dev Login
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <form action={login}>
+                <input type="hidden" name="email" value="sarah@sunrise.edu" />
+                <input type="hidden" name="password" value="Demo@123" />
+                <button type="submit" className="w-full rounded-lg bg-surface-tertiary border border-border px-3 py-2 text-xs font-medium text-on-surface hover:bg-surface-hover transition-colors shadow-sm">
+                  👑 Principal
+                </button>
+              </form>
+              <form action={login}>
+                <input type="hidden" name="email" value="emily@sunrise.edu" />
+                <input type="hidden" name="password" value="Demo@123" />
+                <button type="submit" className="w-full rounded-lg bg-surface-tertiary border border-border px-3 py-2 text-xs font-medium text-on-surface hover:bg-surface-hover transition-colors shadow-sm">
+                  👩‍🏫 Teacher
+                </button>
+              </form>
+              <form action={login}>
+                <input type="hidden" name="email" value="alice.parent@sunrise.edu" />
+                <input type="hidden" name="password" value="Demo@123" />
+                <button type="submit" className="w-full rounded-lg bg-surface-tertiary border border-border px-3 py-2 text-xs font-medium text-on-surface hover:bg-surface-hover transition-colors shadow-sm">
+                  👩‍👦 Parent
+                </button>
+              </form>
+              <form action={login}>
+                <input type="hidden" name="email" value="student1@sunrise.edu" />
+                <input type="hidden" name="password" value="Demo@123" />
+                <button type="submit" className="w-full rounded-lg bg-surface-tertiary border border-border px-3 py-2 text-xs font-medium text-on-surface hover:bg-surface-hover transition-colors shadow-sm">
+                  🎒 Student
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

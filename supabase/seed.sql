@@ -4,7 +4,7 @@
 -- ==========================================================
 -- SCHOOLS
 -- ==========================================================
-insert into schools (id, name, slug, address, phone, timezone, academic_year) values
+insert into schools (id, name, slug, address, phone, timezone, academic_year) overriding system value values
   (1, 'Sunrise Elementary', 'sunrise-elementary', '123 Learning Lane, Springfield', '+1-555-0101', 'America/New_York', '2025-2026'),
   (2, 'Oakridge High School', 'oakridge-high', '456 Knowledge Blvd, Westfield', '+1-555-0202', 'America/Chicago', '2025-2026');
 
@@ -62,7 +62,7 @@ from (values
 -- ==========================================================
 -- CLASSES (2 per school)
 -- ==========================================================
-insert into classes (id, school_id, name, grade, section, teacher_id, academic_year) values
+insert into classes (id, school_id, name, grade, section, teacher_id, academic_year) overriding system value values
   (1, 1, 'Math 101', '3rd Grade', 'A', (select id from profiles where email = 'emily@sunrise.edu'), '2025-2026'),
   (2, 1, 'Science 101', '4th Grade', 'B', (select id from profiles where email = 'marcus@sunrise.edu'), '2025-2026'),
   (3, 2, 'Algebra I', '9th Grade', 'A', (select id from profiles where email = 'linda@oakridge.edu'), '2025-2026'),
@@ -108,7 +108,7 @@ insert into attendance_records (class_id, student_id, date, status, marked_by) v
 -- ==========================================================
 -- ANNOUNCEMENTS
 -- ==========================================================
-insert into announcements (id, school_id, author_id, title, body, priority, target_roles) values
+insert into announcements (id, school_id, author_id, title, body, priority, target_roles) overriding system value values
   (1, 1, (select id from profiles where email = 'sarah@sunrise.edu'), 'Winter Break Reminder', 'School will be closed Dec 23 - Jan 3. Enjoy the holidays!', 'normal', '{all}'),
   (2, 1, (select id from profiles where email = 'sarah@sunrise.edu'), 'Early Dismissal Friday', 'School will close at 1:00 PM this Friday for staff development.', 'high', '{all}'),
   (3, 2, (select id from profiles where email = 'james@oakridge.edu'), 'Snow Day - School Closed', 'Due to severe weather, Oakridge High is closed today. Stay safe!', 'emergency', '{all}'),

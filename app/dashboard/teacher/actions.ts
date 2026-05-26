@@ -47,6 +47,21 @@ export async function getTeacherProfile(): Promise<{
 export async function getTeacherClasses(teacherId: number): Promise<Class[]> {
   const supabase = await createClient()
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, school_id")
+    .eq("id", teacherId)
+    .single()
+
+  if (profile?.role === "principal") {
+    const { data: classes } = await supabase
+      .from("classes")
+      .select("*")
+      .eq("school_id", profile.school_id)
+      .order("name")
+    return (classes || []) as Class[]
+  }
+
   const { data: classes } = await supabase
     .from("classes")
     .select("*")
@@ -104,7 +119,10 @@ export async function markAttendance(
   const { data: profileId, error: profileError } = await supabase.rpc("get_profile_id")
   if (profileError || !profileId) throw new Error("Could not verify identity")
 
-  const { data: existing } = await supabase
+  // Revert to authenticated client
+  const supabaseAuth = supabase
+
+  const { data: existing } = await supabaseAuth
     .from("attendance_records")
     .select("id, student_id")
     .eq("class_id", classId)
@@ -115,8 +133,10 @@ export async function markAttendance(
   const existingMap = new Map<number, number>()
   existing?.forEach((r) => existingMap.set(r.student_id, r.id))
 
-  const operations: AttendanceUpsert[] = records.map((r) => {
-    const base: AttendanceUpsert = {
+  const results = []
+
+  for (const r of records) {
+    const base = {
       class_id: classId,
       student_id: r.student_id,
       date,
@@ -125,16 +145,27 @@ export async function markAttendance(
       notes: r.notes || null,
       parent_notified: false,
     }
+
     const existingId = existingMap.get(r.student_id)
-    if (existingId) base.id = existingId
-    return base
-  })
+    if (existingId) {
+      const { data, error } = await supabaseAuth
+        .from("attendance_records")
+        .update(base)
+        .eq("id", existingId)
+        .select()
+        .single()
+      if (error) throw new Error(error.message)
+      results.push(data)
+    } else {
+      const { data, error } = await supabaseAuth
+        .from("attendance_records")
+        .insert([base])
+        .select()
+        .single()
+      if (error) throw new Error(error.message)
+      results.push(data)
+    }
+  }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase.from("attendance_records") as any)
-    .upsert(operations)
-    .select()
-
-  if (error) throw new Error(error.message)
-  return data
+  return results
 }

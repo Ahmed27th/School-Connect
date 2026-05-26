@@ -65,28 +65,30 @@ export function useMarkAttendance() {
       queryClient.setQueryData<AttendanceRow[]>(
         ["attendance", classId, date],
         (old) => {
-          if (!old)
-            return records.map((r) => ({
-              id: 0,
-              class_id: classId,
-              student_id: r.student_id,
-              date,
-              status: r.status,
-              marked_by: 0,
-              notes: r.notes || null,
-              parent_notified: false,
-              notified_at: null,
-              created_at: new Date().toISOString(),
-            }))
+          const prev = old || []
+          const updated = [...prev]
 
-          return old.map((existing) => {
-            const update = records.find(
-              (r) => r.student_id === existing.student_id
-            )
-            if (update)
-              return { ...existing, status: update.status, notes: update.notes || null }
-            return existing
+          records.forEach((r) => {
+            const index = updated.findIndex((existing) => existing.student_id === r.student_id)
+            if (index >= 0) {
+              updated[index] = { ...updated[index], status: r.status, notes: r.notes || null }
+            } else {
+              updated.push({
+                id: Math.random(), // Temporary ID
+                class_id: classId,
+                student_id: r.student_id,
+                date,
+                status: r.status,
+                marked_by: 0,
+                notes: r.notes || null,
+                parent_notified: false,
+                notified_at: null,
+                created_at: new Date().toISOString(),
+              })
+            }
           })
+
+          return updated
         }
       )
 

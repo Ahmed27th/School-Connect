@@ -251,7 +251,7 @@ stable
 security definer
 set search_path = ''
 as $$
-    select (select get_school_id()) = school_id
+    select (select public.get_school_id()) = school_id
     from public.profiles
     where id = target_profile_id;
 $$;
@@ -326,7 +326,7 @@ create policy "View enrollments in school"
 create policy "Manage enrollments - teachers and principals"
     on enrollments for insert
     to authenticated
-    using (
+    with check (
         (select get_my_role()) in ('principal', 'teacher')
         and (select get_school_id()) = (select c.school_id from classes c where c.id = class_id)
     );
@@ -347,7 +347,7 @@ alter table attendance_records enable row level security;
 create policy "Teachers and principals manage attendance"
     on attendance_records for insert
     to authenticated
-    using (
+    with check (
         (select get_my_role()) in ('teacher', 'principal')
         and (select get_school_id()) = (select c.school_id from classes c where c.id = class_id)
     );
@@ -391,15 +391,28 @@ create policy "School isolation - conversations"
 -- ============================================================================
 alter table conversation_participants enable row level security;
 
-create policy "Users see only their own participations"
+create or replace function public.is_conversation_participant(conv_id bigint, prof_id bigint)
+returns boolean
+language sql
+security definer
+stable
+set search_path = ''
+as $$
+    select exists (
+        select 1 from public.conversation_participants
+        where conversation_id = conv_id and profile_id = prof_id
+    );
+$$;
+
+create policy "Users see all participants of conversations they are in"
     on conversation_participants for select
     to authenticated
-    using (profile_id = (select get_profile_id()));
+    using (public.is_conversation_participant(conversation_id, public.get_profile_id()));
 
 create policy "Participants can add others to their conversations"
     on conversation_participants for insert
     to authenticated
-    with check (profile_id = (select get_profile_id()));
+    with check ( (select public.get_school_id()) = (select c.school_id from public.conversations c where c.id = conversation_id) );
 
 -- ============================================================================
 -- RLS: MESSAGES
@@ -506,16 +519,16 @@ begin
     if new.status = 'absent' and new.parent_notified = false then
         -- Find the parent for this student
         select e.parent_id into v_parent_id
-        from enrollments e
+        from public.enrollments e
         where e.student_id = new.student_id
           and e.parent_id is not null
         limit 1;
 
         if v_parent_id is not null then
-            insert into attendance_alerts (attendance_id, student_id, parent_id, method)
+            insert into public.attendance_alerts (attendance_id, student_id, parent_id, method)
             values (new.id, new.student_id, v_parent_id, 'in_app');
 
-            update attendance_records
+            update public.attendance_records
             set parent_notified = true, notified_at = now()
             where id = new.id;
         end if;

@@ -30,6 +30,7 @@ import {
   PanelLeft,
   User,
 } from "lucide-react"
+import { logout } from "@/app/(auth)/login/actions"
 
 type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"]
 
@@ -271,7 +272,7 @@ export function SidebarUserMenu({ profile }: { profile: ProfileRow }) {
             Settings
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive">
+          <DropdownMenuItem variant="destructive" onClick={() => logout()}>
             <LogOut className="mr-2 size-4" />
             Sign out
           </DropdownMenuItem>

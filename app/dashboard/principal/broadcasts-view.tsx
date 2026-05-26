@@ -65,24 +65,26 @@ export function BroadcastsView({
         </p>
       </DashboardCard>
 
-      <div className="flex justify-end">
-        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-          <SheetTrigger render={<Button><Plus className="size-4" />New Announcement</Button>} />
-          <SheetContent side="right" className="sm:max-w-md">
-            <SheetHeader>
-              <SheetTitle>New Announcement</SheetTitle>
-            </SheetHeader>
-            <div className="p-4">
-              <AnnouncementForm
-                profile={profile}
-                onSubmit={(data) => createMutation.mutate(data)}
-                isPending={createMutation.isPending}
-                onCancel={() => setSheetOpen(false)}
-              />
-            </div>
-          </SheetContent>
-        </Sheet>
-      </div>
+      {profile.role === "principal" && (
+        <div className="flex justify-end">
+          <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+            <SheetTrigger render={<Button><Plus className="size-4" />New Announcement</Button>} />
+            <SheetContent side="right" className="sm:max-w-md">
+              <SheetHeader>
+                <SheetTitle>New Announcement</SheetTitle>
+              </SheetHeader>
+              <div className="p-4">
+                <AnnouncementForm
+                  profile={profile}
+                  onSubmit={(data) => createMutation.mutate(data)}
+                  isPending={createMutation.isPending}
+                  onCancel={() => setSheetOpen(false)}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      )}
 
       <div className="flex flex-col gap-4">
         {isLoading ? (
@@ -104,6 +106,7 @@ export function BroadcastsView({
               announcement={announcement}
               onEdit={() => {}}
               onDelete={(id) => deleteMutation.mutate(id)}
+              profile={profile}
             />
           ))
         )}
