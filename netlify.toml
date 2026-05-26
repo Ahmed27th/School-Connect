@@ -1,6 +1,7 @@
 [build]
-  command = "npm run build"
+  command = "npx next build"
   publish = ".next"
+  environment = { NEXT_DISABLE_TURBOPACK = "1" }
 
 [[headers]]
   for = "/_next/static/*"
