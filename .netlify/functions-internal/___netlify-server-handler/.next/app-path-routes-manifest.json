@@ -1,0 +1,18 @@
+{
+  "/(auth)/login/page": "/login",
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/dashboard/announcements/page": "/dashboard/announcements",
+  "/dashboard/attendance/page": "/dashboard/attendance",
+  "/dashboard/classes/[id]/drive/page": "/dashboard/classes/[id]/drive",
+  "/dashboard/classes/page": "/dashboard/classes",
+  "/dashboard/messages/page": "/dashboard/messages",
+  "/dashboard/page": "/dashboard",
+  "/dashboard/parent/page": "/dashboard/parent",
+  "/dashboard/principal/page": "/dashboard/principal",
+  "/dashboard/student/page": "/dashboard/student",
+  "/dashboard/students/page": "/dashboard/students",
+  "/dashboard/teacher/page": "/dashboard/teacher",
+  "/favicon.ico/route": "/favicon.ico",
+  "/page": "/"
+}

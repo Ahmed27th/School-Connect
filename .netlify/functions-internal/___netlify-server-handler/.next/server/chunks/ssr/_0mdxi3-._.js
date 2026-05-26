@@ -1,0 +1,34 @@
+module.exports=[37936,(a,b,c)=>{"use strict";Object.defineProperty(c,"__esModule",{value:!0}),Object.defineProperty(c,"registerServerReference",{enumerable:!0,get:function(){return d.registerServerReference}});let d=a.r(11857)},13095,(a,b,c)=>{"use strict";function d(a){for(let b=0;b<a.length;b++){let c=a[b];if("function"!=typeof c)throw Object.defineProperty(Error(`A "use server" file can only export async functions, found ${typeof c}.
+Read more: https://nextjs.org/docs/messages/invalid-use-server-value`),"__NEXT_ERROR_CODE",{value:"E352",enumerable:!1,configurable:!0})}}Object.defineProperty(c,"__esModule",{value:!0}),Object.defineProperty(c,"ensureServerEntryExports",{enumerable:!0,get:function(){return d}})},84148,a=>{"use strict";var b=a.i(94468),c=a.i(37936),d=a.i(98310),e=a.i(94950);async function f(){let a=await (0,d.createClient)(),b=await (0,e.getProfile)();if(!b)throw Error("Not authenticated");let{data:c,error:f}=await a.from("conversation_participants").select("conversation_id").eq("profile_id",b.id);if(f)throw Error(f.message);let g=c.map(a=>a.conversation_id);if(0===g.length)return[];let{data:h,error:i}=await a.from("conversations").select(`
+      id,
+      subject,
+      created_at,
+      conversation_participants (
+        profile_id,
+        profiles (id, full_name, email, role, avatar_url)
+      ),
+      messages (
+        id,
+        body,
+        created_at,
+        sender_id
+      )
+    `).in("id",g).order("created_at",{ascending:!1});if(i)throw Error(i.message);return h.map(a=>{let c=[...a.messages||[]].sort((a,b)=>new Date(b.created_at).getTime()-new Date(a.created_at).getTime())[0]||null,d=a.conversation_participants.filter(a=>a.profile_id!==b.id).map(a=>a.profiles);return{id:a.id,subject:a.subject,created_at:a.created_at,otherParticipant:d[0]||null,lastMessage:c}})}async function g(a){let b=await (0,d.createClient)();if(!await (0,e.getProfile)())throw Error("Not authenticated");let{data:c,error:f}=await b.from("messages").select(`
+      id,
+      conversation_id,
+      sender_id,
+      body,
+      created_at,
+      profiles!messages_sender_id_fkey (id, full_name, role, avatar_url)
+    `).eq("conversation_id",a).order("created_at",{ascending:!0});if(f)throw Error(f.message);return c}async function h(a,b,c){let f=await (0,d.createClient)(),g=await (0,e.getProfile)();if(!g)throw Error("Not authenticated");let h={conversation_id:a,sender_id:g.id,body:b};c&&(h.attachment_url=c.url,h.attachment_type=c.type);let{data:i,error:j}=await f.from("messages").insert(h).select().single();if(j)throw Error(j.message);return i}async function i(a){let b,c=await (0,d.createClient)(),f=await (0,e.getProfile)();if(!f)throw Error("Not authenticated");let g=a.get("file");if(!g)throw Error("No file provided");if(g.size>0xa00000)throw Error("File must be smaller than 10MB");b=g.type.startsWith("image/")?"image":g.type.startsWith("video/")?"video":g.type.startsWith("audio/")?"audio":"document";let h=g.name.split(".").pop()||"bin",i=`${f.school_id}/${f.id}/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${h}`,{error:j}=await c.storage.from("chat-attachments").upload(i,g,{contentType:g.type,upsert:!1});if(j)throw Error(`Upload failed: ${j.message}`);let{data:k}=c.storage.from("chat-attachments").getPublicUrl(i);return{url:k.publicUrl,type:b}}async function j(){let a=await (0,d.createClient)(),b=await (0,e.getProfile)();if(!b)throw Error("Not authenticated");if("teacher"===b.role){let{data:c}=await a.from("classes").select("id").eq("teacher_id",b.id),d=c?.map(a=>a.id)||[];if(0===d.length)return[];let{data:e}=await a.from("enrollments").select(`
+        parent_id,
+        profiles!enrollments_parent_id_fkey (id, full_name, email, role, avatar_url)
+      `).in("class_id",d).not("parent_id","is",null),{data:f}=await a.from("enrollments").select(`
+        student_id,
+        profiles!enrollments_student_id_fkey (id, full_name, email, role, avatar_url)
+      `).in("class_id",d),g=new Map;e?.forEach(a=>{a.profiles&&g.set(a.profiles.id,a.profiles)}),f?.forEach(a=>{a.profiles&&g.set(a.profiles.id,a.profiles)});let h=Array.from(g.values());return h.sort((a,b)=>a.full_name.localeCompare(b.full_name)),h}if("parent"===b.role){let{data:c}=await a.from("enrollments").select("class_id").eq("parent_id",b.id),d=c?.map(a=>a.class_id)||[];if(0===d.length)return[];let{data:e}=await a.from("classes").select(`
+        teacher_id,
+        profiles!classes_teacher_id_fkey (id, full_name, email, role, avatar_url)
+      `).in("id",d).not("teacher_id","is",null),f=new Map;return e?.forEach(a=>{a.profiles&&f.set(a.profiles.id,a.profiles)}),Array.from(f.values())}if("principal"===b.role){let{data:c,error:d}=await a.from("profiles").select("id, full_name, email, role, avatar_url").eq("school_id",b.school_id).in("role",["teacher","parent"]).order("full_name");if(d)throw Error(d.message);return c}return[]}async function k(a){let b=await (0,d.createClient)(),c=await (0,e.getProfile)();if(!c)throw Error("Not authenticated");let{data:f}=await b.from("conversation_participants").select("conversation_id").eq("profile_id",c.id),{data:g}=await b.from("conversation_participants").select("conversation_id").eq("profile_id",a),h=f?.map(a=>a.conversation_id)||[],i=g?.map(a=>a.conversation_id)||[],j=h.filter(a=>i.includes(a));if(j.length>0){let{data:a}=await b.from("conversation_participants").select("conversation_id").in("conversation_id",j),c={};a?.forEach(a=>{c[a.conversation_id]=(c[a.conversation_id]||0)+1});let d=j.find(a=>2===c[a]);if(d)return{conversationId:d}}let{data:k,error:l}=await b.from("conversations").insert({school_id:c.school_id,subject:"Direct Chat"}).select().single();if(l)throw Error(l.message);let{error:m}=await b.from("conversation_participants").insert([{conversation_id:k.id,profile_id:c.id},{conversation_id:k.id,profile_id:a}]);if(m)throw Error(m.message);return{conversationId:k.id}}(0,a.i(13095).ensureServerEntryExports)([f,g,h,i,j,k]),(0,c.registerServerReference)(f,"001138105d93a27f7ba919c2fef3579361c443879f",null),(0,c.registerServerReference)(g,"4070795f74338e03fc9dd1bd712d6644eaf263d6bf",null),(0,c.registerServerReference)(h,"70fc2859cb2ae8399fba810120be87d050d3d9cc65",null),(0,c.registerServerReference)(i,"4068ef35befe8a2db0725e1f4cad54eee8ac0b4f7d",null),(0,c.registerServerReference)(j,"00cb5d6df2579a38deed7928b8eff781eed63022d0",null),(0,c.registerServerReference)(k,"4086dd3fa2f348fa35a79aaf3ff6c23485a2e9a29b",null),a.s([],20862),a.i(20862),a.s(["001138105d93a27f7ba919c2fef3579361c443879f",0,f,"001ea2d1c64e8188117e611198ed0e8cda45d56b0f",()=>b.logout,"00cb5d6df2579a38deed7928b8eff781eed63022d0",0,j,"4068ef35befe8a2db0725e1f4cad54eee8ac0b4f7d",0,i,"4070795f74338e03fc9dd1bd712d6644eaf263d6bf",0,g,"4086dd3fa2f348fa35a79aaf3ff6c23485a2e9a29b",0,k,"70fc2859cb2ae8399fba810120be87d050d3d9cc65",0,h],84148)}];
+
+//# sourceMappingURL=_0mdxi3-._.js.map
