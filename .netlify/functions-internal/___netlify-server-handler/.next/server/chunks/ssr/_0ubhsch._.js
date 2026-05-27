@@ -1,3 +1,0 @@
-module.exports=[50463,a=>{"use strict";var b=a.i(87924),c=a.i(97895);a.s(["Skeleton",0,function({className:a,...d}){return(0,b.jsx)("div",{"data-slot":"skeleton",className:(0,c.cn)("animate-pulse rounded-md bg-muted",a),...d})}])},3512,a=>{"use strict";let b=(0,a.i(64831).default)("plus",[["path",{d:"M5 12h14",key:"1ays0h"}],["path",{d:"M12 5v14",key:"s699le"}]]);a.s(["Plus",0,b],3512)}];
-
-//# sourceMappingURL=_0ubhsch._.js.map

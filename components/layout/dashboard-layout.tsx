@@ -14,6 +14,8 @@ import {
 } from "lucide-react"
 import { Sidebar, SidebarHeader, SidebarLogo, SidebarGroup, SidebarItem, SidebarCollapseButton, SidebarUserMenu } from "./sidebar"
 import { BottomNav } from "./bottom-nav"
+import { getAlerts, getUnreadAlertCount } from "@/app/dashboard/actions"
+import { NotificationBell } from "@/components/notification-bell"
 
 type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"]
 
@@ -38,7 +40,7 @@ function isStaff(role: string) {
   return role === "principal" || role === "teacher"
 }
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   profile,
   children,
 }: {
@@ -46,6 +48,8 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const staff = isStaff(profile.role)
+  const alerts = profile.role === "parent" ? await getAlerts() : []
+  const unreadAlertCount = profile.role === "parent" ? await getUnreadAlertCount() : 0
 
   if (staff) {
     return (
@@ -58,6 +62,7 @@ export default function DashboardLayout({
                 School
               </span>
             </SidebarLogo>
+            <NotificationBell initialAlerts={alerts} initialUnread={unreadAlertCount} />
             <SidebarCollapseButton />
           </SidebarHeader>
 
@@ -105,6 +110,11 @@ export default function DashboardLayout({
   return (
     <div className="flex min-h-screen bg-surface-secondary pb-16">
       <main className="flex-1 px-4 pt-4 md:px-6 md:pt-6 lg:px-8">
+        {alerts.length > 0 && (
+          <div className="flex items-center justify-end mb-3">
+            <NotificationBell initialAlerts={alerts} initialUnread={unreadAlertCount} />
+          </div>
+        )}
         <div className="mx-auto w-full max-w-(--breakpoint-xl)">
           {children}
         </div>

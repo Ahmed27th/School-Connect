@@ -29,8 +29,10 @@ import {
   ChevronLeft,
   PanelLeft,
   User,
+  Bell,
 } from "lucide-react"
 import { logout } from "@/app/(auth)/login/actions"
+import { NotificationBell } from "@/components/notification-bell"
 
 type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"]
 
@@ -51,9 +53,13 @@ function useSidebar() {
 
 export function Sidebar({
   profile,
+  notificationAlerts,
+  notificationUnread = 0,
   children,
 }: {
   profile: ProfileRow
+  notificationAlerts?: any[]
+  notificationUnread?: number
   children: React.ReactNode
 }) {
   const [collapsed, setCollapsed] = React.useState(false)

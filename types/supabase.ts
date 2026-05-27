@@ -115,6 +115,32 @@ export interface Database {
         Update: { id?: number; folder_id?: number; name?: string; storage_path?: string; size_bytes?: number; content_type?: string; created_by?: number; created_at?: string; updated_at?: string }
         Relationships: []
       }
+      assignments: {
+        Row: { id: number; class_id: number; title: string; description: string | null; due_date: string | null; total_points: number; created_by: number; created_at: string; updated_at: string }
+        Insert: { id?: number; class_id: number; title: string; description?: string | null; due_date?: string | null; total_points?: number; created_by: number; created_at?: string; updated_at?: string }
+        Update: { id?: number; class_id?: number; title?: string; description?: string | null; due_date?: string | null; total_points?: number; created_by?: number; created_at?: string; updated_at?: string }
+        Relationships: [
+          {
+            foreignKeyName: "assignments_class_id_fkey",
+            columns: ["class_id"],
+            referencedRelation: "classes",
+            referencedColumns: ["id"],
+          }
+        ]
+      }
+      submissions: {
+        Row: { id: number; assignment_id: number; student_id: number; file_url: string | null; grade: number | null; feedback: string | null; submitted_at: string }
+        Insert: { id?: number; assignment_id: number; student_id: number; file_url?: string | null; grade?: number | null; feedback?: string | null; submitted_at?: string }
+        Update: { id?: number; assignment_id?: number; student_id?: number; file_url?: string | null; grade?: number | null; feedback?: string | null; submitted_at?: string }
+        Relationships: [
+          {
+            foreignKeyName: "submissions_assignment_id_fkey",
+            columns: ["assignment_id"],
+            referencedRelation: "assignments",
+            referencedColumns: ["id"],
+          }
+        ]
+      }
     }
     Views: {}
     Functions: {
@@ -125,6 +151,9 @@ export interface Database {
       is_conversation_participant: { Args: { conv_id: number; prof_id: number }; Returns: boolean }
       is_class_teacher_or_principal: { Args: { c_id: string }; Returns: boolean }
       is_enrolled_in_class: { Args: { c_id: string }; Returns: boolean }
+      is_student_in_assignment_class: { Args: { assignment_id: number }; Returns: boolean }
+      is_parent_of_assignment_student: { Args: { assignment_id: number; student_id: number }; Returns: boolean }
+      is_assignment_class_teacher: { Args: { assignment_id: number }; Returns: boolean }
     }
     Enums: {}
     CompositeTypes: {}

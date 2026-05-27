@@ -65,12 +65,16 @@ export async function getConversations() {
   })
 }
 
-export async function getMessages(conversationId: number) {
+export async function getMessages(
+  conversationId: number,
+  beforeTimestamp?: string,
+  pageSize = 50
+) {
   const supabase = await createClient()
   const profile = await getProfile()
   if (!profile) throw new Error("Not authenticated")
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("messages")
     .select(`
       id,
@@ -81,10 +85,23 @@ export async function getMessages(conversationId: number) {
       profiles!messages_sender_id_fkey (id, full_name, role, avatar_url)
     `)
     .eq("conversation_id", conversationId)
-    .order("created_at", { ascending: true })
+    .order("created_at", { ascending: false })
+    .limit(pageSize)
+
+  if (beforeTimestamp) {
+    query = query.lt("created_at", beforeTimestamp)
+  }
+
+  const { data, error } = await query
 
   if (error) throw new Error(error.message)
-  return data
+
+  const nextCursor =
+    data && data.length === pageSize
+      ? data[data.length - 1].created_at
+      : null
+
+  return { data: data ?? [], nextCursor }
 }
 
 export async function sendMessage(conversationId: number, body: string, attachment?: { url: string; type: string }) {

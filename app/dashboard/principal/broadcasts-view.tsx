@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { Megaphone, Plus } from "lucide-react"
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { Megaphone, Plus, ChevronDown } from "lucide-react"
 import {
   Sheet,
   SheetTrigger,
@@ -18,7 +18,8 @@ import {
   DashboardCardTitle,
   DashboardCardValue,
 } from "@/components/dashboard-card"
-import { getAnnouncements, createAnnouncement, deleteAnnouncement } from "./actions"
+import { createAnnouncement, deleteAnnouncement } from "./actions"
+import { getAnnouncementsPaginated } from "../announcements/actions"
 import { AnnouncementCard } from "./announcement-card"
 import { AnnouncementForm } from "./announcement-form"
 
@@ -30,10 +31,22 @@ export function BroadcastsView({
   const [sheetOpen, setSheetOpen] = useState(false)
   const queryClient = useQueryClient()
 
-  const { data: announcements, isLoading } = useQuery({
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useInfiniteQuery({
     queryKey: ["announcements"],
-    queryFn: getAnnouncements,
+    queryFn: ({ pageParam = 0 }) =>
+      getAnnouncementsPaginated(pageParam as number),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.hasMore ? allPages.length : undefined,
   })
+
+  const announcements = data?.pages.flatMap((p) => p.data) ?? []
 
   const createMutation = useMutation({
     mutationFn: createAnnouncement,
@@ -100,15 +113,34 @@ export function BroadcastsView({
             </p>
           </DashboardCard>
         ) : (
-          announcements.map((announcement) => (
-            <AnnouncementCard
-              key={announcement.id}
-              announcement={announcement}
-              onEdit={() => {}}
-              onDelete={(id) => deleteMutation.mutate(id)}
-              profile={profile}
-            />
-          ))
+          <>
+            {announcements.map((announcement) => (
+              <AnnouncementCard
+                key={announcement.id}
+                announcement={announcement}
+                onEdit={() => {}}
+                onDelete={(id) => deleteMutation.mutate(id)}
+                profile={profile}
+              />
+            ))}
+            {hasNextPage && (
+              <div className="flex justify-center pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fetchNextPage()}
+                  disabled={isFetchingNextPage}
+                >
+                  {isFetchingNextPage ? (
+                    <div className="size-4 border-2 border-primary border-t-transparent rounded-full animate-spin mr-2" />
+                  ) : (
+                    <ChevronDown className="size-4 mr-2" />
+                  )}
+                  Load More
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

@@ -1,6 +1,6 @@
 import { requireRole } from "@/lib/auth/guards"
 import { getClassesData } from "../actions"
-import { BookOpen, GraduationCap, User, Folder } from "lucide-react"
+import { BookOpen, GraduationCap, User, Folder, FileText } from "lucide-react"
 import Link from "next/link"
 import {
   DashboardCard,
@@ -71,13 +71,22 @@ export default async function ClassesPage() {
                       Enrolled: <span className="font-medium text-on-surface">{studentCount} Students</span>
                     </span>
                   </div>
-                  <Link 
-                    href={`/dashboard/classes/${cls.id}/drive`}
-                    className="flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 font-body text-xs font-semibold text-primary hover:bg-primary/20 transition-colors"
-                  >
-                    <Folder className="size-3.5" />
-                    Drive
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <Link 
+                      href={`/dashboard/classes/${cls.id}/assignments`}
+                      className="flex items-center gap-1.5 rounded-lg bg-success/10 px-3 py-1.5 font-body text-xs font-semibold text-success hover:bg-success/20 transition-colors"
+                    >
+                      <FileText className="size-3.5" />
+                      Assignments
+                    </Link>
+                    <Link 
+                      href={`/dashboard/classes/${cls.id}/drive`}
+                      className="flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 font-body text-xs font-semibold text-primary hover:bg-primary/20 transition-colors"
+                    >
+                      <Folder className="size-3.5" />
+                      Drive
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>

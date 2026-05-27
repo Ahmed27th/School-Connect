@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { Send, Paperclip, Phone, Video, X, FileText, Image as ImageIcon, Download } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { getMessages, sendMessage, uploadAttachment } from "./actions"
@@ -24,15 +24,29 @@ export function ChatWindow({
   const [callMode, setCallMode] = useState<"audio" | "video" | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  const prevScrollHeightRef = useRef(0)
   const queryClient = useQueryClient()
   const supabase = createClient()
 
-  // Fetch messages in thread
-  const { data: messages, isLoading } = useQuery({
+  // Fetch messages with infinite scroll
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useInfiniteQuery({
     queryKey: ["messages", conversationId],
-    queryFn: () => getMessages(conversationId),
+    queryFn: ({ pageParam }) =>
+      getMessages(conversationId, pageParam as string | undefined),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
     enabled: !!conversationId,
   })
+
+  const messages = data?.pages.flatMap((p) => p.data).reverse() ?? []
 
   // Mutation to send a message
   const sendMutation = useMutation({
@@ -68,6 +82,34 @@ export function ChatWindow({
       supabase.removeChannel(channel)
     }
   }, [conversationId, queryClient, supabase])
+
+  // IntersectionObserver for infinite scroll upwards
+  useEffect(() => {
+    if (!sentinelRef.current) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          if (scrollRef.current) {
+            prevScrollHeightRef.current = scrollRef.current.scrollHeight
+          }
+          fetchNextPage()
+        }
+      },
+      { threshold: 0.25 }
+    )
+
+    observer.observe(sentinelRef.current)
+    return () => observer.disconnect()
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
+
+  // Preserve scroll position after loading older messages
+  useEffect(() => {
+    if (!isFetchingNextPage && prevScrollHeightRef.current > 0 && scrollRef.current) {
+      const newScrollHeight = scrollRef.current.scrollHeight
+      scrollRef.current.scrollTop = newScrollHeight - prevScrollHeightRef.current
+      prevScrollHeightRef.current = 0
+    }
+  }, [isFetchingNextPage])
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -198,7 +240,14 @@ export function ChatWindow({
       </div>
 
       {/* Messages Feed */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-4">
+        {/* Sentinel for infinite scroll */}
+        <div ref={sentinelRef} className="flex items-center justify-center">
+          {isFetchingNextPage && (
+            <div className="size-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          )}
+        </div>
+
         {isLoading ? (
           <div className="space-y-4">
             <Skeleton className="h-10 w-2/3 rounded-lg" />

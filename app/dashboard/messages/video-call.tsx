@@ -19,6 +19,16 @@ const ICE_SERVERS: RTCConfiguration = {
   iceServers: [
     { urls: "stun:stun.l.google.com:19302" },
     { urls: "stun:stun1.l.google.com:19302" },
+    {
+      urls: "turn:openrelay.metered.ca:80",
+      username: "openrelayproject",
+      credential: "openrelayproject",
+    },
+    {
+      urls: "turn:openrelay.metered.ca:443",
+      username: "openrelayproject",
+      credential: "openrelayproject",
+    },
   ],
 }
 
@@ -175,16 +185,20 @@ export function VideoCall({
           pc.addTrack(track, stream)
         })
 
+        // Deterministic role: lower profile ID is always the caller
+        const isCaller = profile.id < (recipient?.id ?? Infinity)
+
         // Set up signaling channel listeners
         channel
           .on("broadcast", { event: "call-offer" }, async (payload: any) => {
             const { sdp, from } = payload.payload
-            if (from === profile.id) return // Ignore our own offers
+            if (from === profile.id) return
 
-            // We received an offer — we are the callee
+            // Only accept offer if we haven't created one ourselves
+            if (pc.signalingState !== "stable") return
+
             setCallState("ringing")
 
-            // Auto-accept for now (could show ringing UI)
             await pc.setRemoteDescription(new RTCSessionDescription(sdp))
             const answer = await pc.createAnswer()
             await pc.setLocalDescription(answer)
@@ -199,6 +213,7 @@ export function VideoCall({
             const { sdp, from } = payload.payload
             if (from === profile.id) return
 
+            if (pc.signalingState !== "have-local-offer") return
             await pc.setRemoteDescription(new RTCSessionDescription(sdp))
           })
           .on("broadcast", { event: "ice-candidate" }, async (payload: any) => {
@@ -220,16 +235,22 @@ export function VideoCall({
           })
           .subscribe(async (status: string) => {
             if (status === "SUBSCRIBED") {
-              // We are the caller — send the offer
-              setCallState("calling")
-              const offer = await pc.createOffer()
-              await pc.setLocalDescription(offer)
+              setCallState(isCaller ? "calling" : "ringing")
 
-              channel.send({
-                type: "broadcast",
-                event: "call-offer",
-                payload: { sdp: offer, from: profile.id },
-              })
+              if (isCaller) {
+                // Brief delay to let callee subscribe before we send offer
+                await new Promise((r) => setTimeout(r, 800))
+                // Re-check state in case call was ended during delay
+                if (pc.signalingState !== "stable") return
+                const offer = await pc.createOffer()
+                await pc.setLocalDescription(offer)
+
+                channel.send({
+                  type: "broadcast",
+                  event: "call-offer",
+                  payload: { sdp: offer, from: profile.id },
+                })
+              }
             }
           })
       } catch (err: any) {
